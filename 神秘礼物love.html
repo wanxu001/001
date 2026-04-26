@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神秘礼物</title>
+    <!-- 引入手写体字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ff6b8b 0%, #ffbad2 100%);
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        /* 调整：生日快乐文字样式 */
+        .birthday-text {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: clamp(2rem, 7vw, 5rem);
+            opacity: 0.2;
+            z-index: 0;
+            pointer-events: none;
+            font-family: 'Ma Shan Zheng', cursive;
+            white-space: nowrap; /* 强制一排显示 */
+            text-align: center;
+        }
+        
+        .fireworks-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        /* 第一个弹窗（初始弹窗） */
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff6b8b 0%, #ffbad2 100%);
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            transition: opacity 0.5s ease;
+        }
+
+        .popup-content-container {
+            transform: translateY(-10%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .popup-title {
+            font-size: 60px;
+            margin-bottom: 30px;
+        }
+
+        .popup-content {
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-size: 32px;
+            margin-bottom: 50px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .popup-btn {
+            padding: 15px 40px;
+            background-color: #fff;
+            color: #ff3e6c;
+            border: none;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .popup-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 新增：书签样式告白弹窗 */
+        .bookmark-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(255, 186, 210, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 998; /* 低于第一个弹窗，高于主页面 */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+
+        /* 书签形状主体 */
+        .bookmark-card {
+            width: 80%;
+            max-width: 600px;
+            background-color: #fff9fb;
+            padding: 40px 30px;
+            border-radius: 10px;
+            /* 书签折角效果 */
+            position: relative;
+            box-shadow: 0 10px 30px rgba(255, 62, 108, 0.2);
+            text-align: center; /* 新增：使卡片内所有内容居中 */
+        }
+
+        .bookmark-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-top: 50px solid #ffd1dc;
+            border-left: 50px solid transparent;
+            border-radius: 0 10px 0 0;
+        }
+
+        /* 新增：蛋糕图标样式 */
+        .cake-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite ease-in-out; /* 新增：蛋糕弹跳动画 */
+        }
+
+        /* 手写体文字样式 - 字号改小 */
+        .bookmark-text {
+            font-family: 'Ma Shan Zheng', cursive; /* 手写体 */
+            color: #d6336c;
+            font-size: 22px; /* 原28px，改小6px */
+            line-height: 1.8;
+            text-align: center;
+            margin: 0;
+            padding: 10px 0;
+        }
+
+        /* 书签弹窗按钮 */
+        .bookmark-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 12px 35px;
+            background-color: #ff3e6c;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .bookmark-btn:hover {
+            transform: scale(1.05);
+            background-color: #d6336c;
+        }
+
+        /* 主页面爱心 */
+        .heart {
+            width: 90px;
+            height: 90px;
+            background-color: #ff3e6c;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%) rotate(-45deg);
+            box-shadow: 0 0 30px rgba(255, 62, 108, 0.7);
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        .heart:before,
+        .heart:after {
+            content: '';
+            width: 90px;
+            height: 90px;
+            background-color: #ff3e6c;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .heart:before {
+            top: -45px;
+            left: 0;
+        }
+
+        .heart:after {
+            top: 0;
+            right: -45px;
+        }
+
+        .rocket-heart {
+            position: absolute;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .explode-heart {
+            position: absolute;
+            color: #fff;
+            opacity: 0;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        /* 新增：单独的蛋糕元素样式 */
+        .cake-particle {
+            position: absolute;
+            color: #fff;
+            opacity: 0;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            z-index: 6;
+            font-size: 24px;
+        }
+
+        .love-text {
+            position: absolute;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            opacity: 0;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 2px 10px rgba(0,0,0,0.3);
+            pointer-events: none;
+            z-index: 7;
+        }
+
+        .tip {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-size: 18px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            animation: breathe 3s infinite ease-in-out;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        audio {
+            display: none;
+        }
+
+        /* 动画定义 */
+        @keyframes rocketLaunch {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--rocket-x), var(--rocket-y)) scale(0.6); opacity: 0.8; }
+        }
+
+        @keyframes explode {
+            0% { transform: scale(0.3) translate(0, 0); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.5) translate(var(--explode-x), var(--explode-y)); opacity: 0; }
+        }
+
+        /* 新增：蛋糕元素动画 */
+        @keyframes cakeExplode {
+            0% { transform: scale(0.5) translate(0, 0); opacity: 1; }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { transform: scale(0.8) translate(var(--explode-x), var(--explode-y)); opacity: 0; }
+        }
+
+        @keyframes textPop {
+            0% { transform: scale(0); opacity: 0; }
+            30% { transform: scale(1.2); opacity: 1; }
+            70% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+
+        @keyframes heartbeat {
+            0% { transform: translate(-50%, -60%) rotate(-45deg) scale(1); opacity: 1; }
+            20% { transform: translate(-50%, -60%) rotate(-45deg) scale(1.15); opacity: 0.9; }
+            40% { transform: translate(-50%, -60%) rotate(-45deg) scale(0.95); opacity: 1; }
+            60% { transform: translate(-50%, -60%) rotate(-45deg) scale(1.1); opacity: 0.9; }
+            100% { transform: translate(-50%, -60%) rotate(-45deg) scale(1); opacity: 1; }
+        }
+        
+        /* 新增：蛋糕弹跳动画 */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .popup-title {
+                font-size: 40px;
+                margin-bottom: 10px;
+            }
+            
+            .popup-content {
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
+            
+            .popup-btn {
+                padding: 12px 30px;
+                font-size: 18px;
+            }
+
+            /* 书签弹窗移动端适配 */
+            .bookmark-card {
+                width: 90%;
+                padding: 30px 20px;
+            }
+            
+            /* 移动端蛋糕图标缩小 */
+            .cake-icon {
+                font-size: 30px;
+                margin-bottom: 15px;
+            }
+
+            /* 移动端手写体文字 - 同步改小 */
+            .bookmark-text {
+                font-size: 19px; /* 原22px，改小3px */
+                line-height: 1.6;
+            }
+
+            .bookmark-btn {
+                padding: 10px 30px;
+                font-size: 16px;
+            }
+            
+            .heart {
+                width: 60px;
+                height: 60px;
+                transform: translate(-50%, -60%) rotate(-45deg);
+            }
+            
+            .heart:before,
+            .heart:after {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .heart:before {
+                top: -30px;
+            }
+            
+            .heart:after {
+                right: -30px;
+            }
+            
+            .tip {
+                font-size: 16px;
+                bottom: 30px;
+            }
+            
+            .rocket-heart {
+                font-size: clamp(18px, 5vw, 24px);
+            }
+            
+            .explode-heart {
+                font-size: clamp(12px, 4vw, 18px);
+            }
+
+            /* 移动端蛋糕元素适配 */
+            .cake-particle {
+                font-size: 18px;
+            }
+            
+            .love-text {
+                font-size: clamp(18px, 5vw, 28px);
+            }
+
+            /* 移动端生日文字适配 */
+            .birthday-text {
+                font-size: clamp(1.2rem, 4vw, 2.5rem);
+                top: 30%; /* 移动端同步修改为30% */
+            }
+        }
+
+        @media (max-width: 375px) {
+            .popup-title {
+                font-size: 34px;
+            }
+            
+            .popup-content {
+                font-size: 20px;
+            }
+
+            /* 小屏移动端手写体文字 - 同步改小 */
+            .bookmark-text {
+                font-size: 17px; /* 原20px，改小3px */
+            }
+            
+            .heart {
+                width: 50px;
+                height: 50px;
+                transform: translate(-50%, -60%) rotate(-45deg);
+            }
+            
+            .heart:before,
+            .heart:after {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .heart:before {
+                top: -25px;
+            }
+            
+            .heart:after {
+                right: -25px;
+            }
+
+            /* 小屏生日文字适配 */
+            .birthday-text {
+                font-size: clamp(1rem, 3.5vw, 2rem);
+                top: 30%; /* 小屏移动端同步修改为30% */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 调整：生日快乐文字（top改为30%） -->
+    <div class="birthday-text">🎂何宝宝，生日快乐🎂</div>
+    
+    <!-- 第一个弹窗（初始弹窗） -->
+    <div class="popup" id="popup">
+        <div class="popup-content-container">
+            <div class="popup-title">🍎</div>
+            <div class="popup-content">你准备好了吗</div>
+            <button class="popup-btn" id="readyBtn">准备好了</button>
+        </div>
+    </div>
+
+    <!-- 新增：书签样式告白弹窗 -->
+    <div class="bookmark-popup" id="bookmarkPopup">
+        <div class="bookmark-card">
+            <!-- 新增：蛋糕图标 -->
+            <div class="cake-icon">🎂</div>
+            <p class="bookmark-text">这是陪你共度的第一个生日，<br>
+比我想象中的美好都更珍贵。<br>
+谢谢你出现在我的生活里，<br>
+把平淡日子酿成了甜。<br>
+往后的每一个生日、每一个四季，<br>
+我都想紧紧牵着你的手，<br>
+陪你笑、陪你闹，<br>
+把所有偏爱和温柔都给你。<br>
+生日快乐呀，我最爱的女孩～</p>
+            <button class="bookmark-btn" id="bookmarkBtn">收下啦</button>
+        </div>
+    </div>
+
+    <!-- 主页面爱心 -->
+    <div class="heart" id="mainHeart"></div>
+    
+    <!-- 点击提示 -->
+    <div class="tip" id="clickTip">❤️点击屏幕试试❤️</div>
+
+    <!-- 烟花容器 -->
+    <div class="fireworks-container" id="fireworksContainer"></div>
+
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+        <source src="https://cdn.jsdelivr.net/gh/wanxu001/my-music@refs/heads/main/%E7%94%9F%E6%97%A5%E5%BF%AB%E4%B9%901.mp3">
+    </audio>
+
+    <script>
+        const bgMusic = document.getElementById('bgMusic');
+        const popup = document.getElementById('popup');
+        const readyBtn = document.getElementById('readyBtn');
+        const bookmarkPopup = document.getElementById('bookmarkPopup');
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const mainHeart = document.getElementById('mainHeart');
+        const clickTip = document.getElementById('clickTip');
+        const fireworksContainer = document.getElementById('fireworksContainer');
+        
+        let musicPlayed = false;
+        let isReady = false;
+        let fadeInterval;
+        let autoFireworksCount = 0; // 自动烟花计数器
+        let cakeSpawnTimer = null; // 蛋糕元素生成定时器
+        
+        // 恢复：只保留爱心元素，蛋糕元素单独处理
+        const heartSymbols = ['❤️', '💖', '💓', '💗', '💘', '💝', '💞', '💕', '💟', '❣️'];
+        // 点击烟花文字
+        const loveTexts = [
+            '生日快乐', '生日快乐',
+            'Happy Birthday', 'Happy Birthday',
+            'I LOVE YOU',
+            '我爱你',
+            '사랑해',
+            'Je t\'aime',
+            '爱してる'
+        ];
+        
+        // 自动烟花前10次专用文字
+        const firstTenTexts = ['生日快乐', 'Happy Birthday'];
+        
+        // 自动烟花10次后使用的加权文字数组
+        const weightedAutoTexts = [
+            // 提高生日相关文字的权重
+            '生日快乐', '生日快乐', '生日快乐', '生日快乐',  // 4次
+            'Happy Birthday', 'Happy Birthday', 'Happy Birthday', 'Happy Birthday',  // 4次
+            // 其他祝福语句
+            '好好吃饭', '好好睡觉', '要开开心心', '笨笨跳跳',
+            '别太累啦', '每天都要笑哟', '你最可爱啦',
+            '我会一直陪着你', '要元气满满', 
+            '给你一个大大的拥抱', '平安喜乐', '运气爆棚',
+            '你一笑我就开心', '想把最好的都给你'
+        ];
+        
+        // 核心修改1：生成烟花（仅爱心，恢复原有效果）
+        function createExplosion(x, y, isAuto = false) {
+            if (!isReady) return;
+            const screenWidth = window.innerWidth;
+            const particleCount = screenWidth < 768 ? 20 : 30;
+            const explosionRadius = screenWidth < 768 ? 100 : 150;
+            
+            // 生成爱心烟花粒子（恢复原有逻辑，无蛋糕混合）
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'explode-heart';
+                particle.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                
+                const size = screenWidth < 768 ? random(10, 20) : random(14, 30);
+                particle.style.fontSize = `${size}px`;
+                const angle = random(0, Math.PI * 2);
+                const distance = random(0, explosionRadius);
+                const explodeX = Math.cos(angle) * distance;
+                const explodeY = Math.sin(angle) * distance;
+                particle.style.setProperty('--explode-x', `${explodeX}px`);
+                particle.style.setProperty('--explode-y', `${explodeY}px`);
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.animation = `explode ${random(1.2, 2)}s ease-out forwards`;
+                particle.style.animationDelay = `${random(0, 0.3)}s`;
+                fireworksContainer.appendChild(particle);
+                setTimeout(() => particle.remove(), 2000);
+            }
+            
+            // 生成烟花文字
+            const textEl = document.createElement('div');
+            textEl.className = 'love-text';
+            
+            if (isAuto) {
+                autoFireworksCount++; // 计数器递增
+                let textContent;
+                
+                // 判断使用哪个文字数组
+                if (autoFireworksCount <= 10) {
+                    // 前10次，使用普通数组
+                    textContent = firstTenTexts[Math.floor(Math.random() * firstTenTexts.length)];
+                } else {
+                    // 10次之后，使用加权数组
+                    textContent = weightedAutoTexts[Math.floor(Math.random() * weightedAutoTexts.length)];
+                }
+                
+                textEl.textContent = textContent;
+                const fontSize = screenWidth < 768 ? random(12, 22) : random(16, 34);
+                textEl.style.fontSize = `${fontSize}px`;
+            } else {
+                // 点击触发的烟花，使用原始逻辑
+                textEl.textContent = loveTexts[Math.floor(Math.random() * loveTexts.length)];
+                const fontSize = screenWidth < 768 ? random(18, 32) : random(24, 48);
+                textEl.style.fontSize = `${fontSize}px`;
+            }
+            
+            textEl.style.left = `${x - parseInt(textEl.style.fontSize) / 4}px`;
+            textEl.style.top = `${y - parseInt(textEl.style.fontSize) / 4}px`;
+            textEl.style.animation = `textPop 2s ease-in-out forwards`;
+            fireworksContainer.appendChild(textEl);
+            setTimeout(() => textEl.remove(), 2000);
+        }
+
+        // 核心修改2：单独生成少量蛋糕元素（不混入爱心烟花）
+        function spawnCakeParticle() {
+            if (!isReady) return;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            
+            // 随机位置（避开中间爱心区域）
+            const x = random(100, screenWidth - 100);
+            const y = random(100, screenHeight - 200);
+            
+            // 生成单个蛋糕元素
+            const cake = document.createElement('div');
+            cake.className = 'cake-particle';
+            cake.textContent = '🎂'; // 仅蛋糕元素
+            const size = screenWidth < 768 ? 18 : 24;
+            cake.style.fontSize = `${size}px`;
+            
+            // 随机扩散方向
+            const explosionRadius = 80;
+            const angle = random(0, Math.PI * 2);
+            const distance = random(0, explosionRadius);
+            const explodeX = Math.cos(angle) * distance;
+            const explodeY = Math.sin(angle) * distance;
+            
+            cake.style.setProperty('--explode-x', `${explodeX}px`);
+            cake.style.setProperty('--explode-y', `${explodeY}px`);
+            cake.style.left = `${x}px`;
+            cake.style.top = `${y}px`;
+            cake.style.animation = `cakeExplode ${random(1.5, 2.5)}s ease-out forwards`;
+            
+            fireworksContainer.appendChild(cake);
+            setTimeout(() => cake.remove(), 2500);
+        }
+        
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        
+        function fadeInMusic(duration = 3000) {
+            const startVolume = 0;
+            const endVolume = 1;
+            const step = (endVolume - startVolume) / (duration / 50);
+            bgMusic.volume = startVolume;
+            
+            bgMusic.play().catch(err => {
+                console.log('音乐需要用户交互：', err);
+                document.addEventListener('click', () => {
+                    bgMusic.play().catch(err => console.log('播放失败：', err));
+                }, { once: true });
+            });
+            
+            if (fadeInterval) clearInterval(fadeInterval);
+            
+            fadeInterval = setInterval(() => {
+                if (bgMusic.volume >= endVolume) {
+                    bgMusic.volume = endVolume;
+                    clearInterval(fadeInterval);
+                } else {
+                    bgMusic.volume += step;
+                }
+            }, 50);
+        }
+        
+        // 恢复：火箭仅显示爱心（无蛋糕混合）
+        function launchRocket(startX, startY, isAuto = false) {
+            if (!isReady) return;
+            const rocket = document.createElement('div');
+            rocket.className = 'rocket-heart';
+            rocket.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+            
+            const screenWidth = window.innerWidth;
+            const size = screenWidth < 768 ? random(18, 28) : random(24, 36);
+            rocket.style.fontSize = `${size}px`;
+            rocket.style.left = `${startX}px`;
+            rocket.style.top = `${startY}px`;
+            const flightDuration = random(1, 2);
+            const range = screenWidth < 768 ? 150 : 200;
+            const height = screenWidth < 768 ? 200 : 300;
+            const targetX = startX + random(-range, range);
+            const targetY = startY - random(height, height + 200);
+            rocket.style.setProperty('--rocket-x', `${targetX - startX}px`);
+            rocket.style.setProperty('--rocket-y', `${targetY - startY}px`);
+            rocket.style.animation = `rocketLaunch ${flightDuration}s ease-out forwards`;
+            fireworksContainer.appendChild(rocket);
+            setTimeout(() => {
+                rocket.remove();
+                createExplosion(targetX, targetY, isAuto);
+            }, flightDuration * 1000);
+        }
+        
+        document.addEventListener('click', (e) => {
+            if (!isReady) return;
+            if (!musicPlayed) {
+                fadeInMusic();
+                musicPlayed = true;
+            }
+            const screenWidth = window.innerWidth;
+            const rocketCount = screenWidth < 768 ? Math.floor(random(1, 3)) : Math.floor(random(2, 5));
+            for (let i = 0; i < rocketCount; i++) {
+                const offsetX = random(-30, 30);
+                const offsetY = random(-20, 20);
+                setTimeout(() => {
+                    launchRocket(e.clientX + offsetX, e.clientY + offsetY);
+                }, i * 300);
+            }
+        });
+        
+        function autoFireworks() {
+            const interval = window.innerWidth < 768 ? 400 : 250;
+            // 爱心烟花自动生成
+            setInterval(() => {
+                if (!isReady) return;
+                const x = random(100, window.innerWidth - 100);
+                const y = window.innerHeight - 50;
+                launchRocket(x, y, true); // 传入isAuto=true
+            }, interval);
+
+            // 蛋糕元素单独少量生成（每3秒1个，数量少）
+            cakeSpawnTimer = setInterval(() => {
+                spawnCakeParticle();
+            }, 3000);
+        }
+        
+        readyBtn.addEventListener('click', () => {
+            if (!musicPlayed) {
+                fadeInMusic();
+                musicPlayed = true;
+            }
+            popup.style.opacity = 0;
+            setTimeout(() => {
+                popup.style.display = 'none';
+                bookmarkPopup.style.opacity = 1;
+                bookmarkPopup.style.pointerEvents = 'auto';
+            }, 500);
+        });
+        
+        bookmarkBtn.addEventListener('click', () => {
+            bookmarkPopup.style.opacity = 0;
+            setTimeout(() => {
+                bookmarkPopup.style.pointerEvents = 'none';
+                mainHeart.style.opacity = 1;
+                clickTip.style.opacity = 1;
+                isReady = true;
+                autoFireworks(); // 启动自动烟花
+            }, 800);
+        });
+        
+        window.addEventListener('beforeunload', () => {
+            if (fadeInterval) clearInterval(fadeInterval);
+            if (cakeSpawnTimer) clearInterval(cakeSpawnTimer);
+            bgMusic.pause();
+        });
+    </script>
+</body>
+</html>
